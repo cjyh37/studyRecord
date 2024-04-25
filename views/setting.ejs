@@ -1,0 +1,35 @@
+<div class="bg-white shadow rounded-lg p-6">
+    <h1 class="text-2xl font-bold mb-4">Settings</h1>
+    <form action="/setting" method="POST">
+        <div class="mb-4">
+            <label for="siteName" class="block mb-2">Site Name</label>
+            <input type="text" id="siteName" name="siteName" class="w-full border border-gray-300 rounded-lg px-3 py-2"
+                value="<%= setting.siteName %>" required>
+        </div>
+        <div class="mb-4">
+            <label class="block mb-2">Learning Record Method</label>
+            <div>
+                <label class="inline-flex items-center">
+                    <input type="radio" name="learningRecordMethod" value="polling"
+                        <%=setting.learningRecordMethod==='polling' ? 'checked' : '' %>>
+                    <span class="ml-2">Polling</span>
+                </label>
+            </div>
+            <div>
+                <label class="inline-flex items-center">
+                    <input type="radio" name="learningRecordMethod" value="sse" <%=setting.learningRecordMethod==='sse'
+                        ? 'checked' : '' %>>
+                    <span class="ml-2">SSE</span>
+                </label>
+            </div>
+            <div>
+                <label class="inline-flex items-center">
+                    <input type="radio" name="learningRecordMethod" value="socketio"
+                        <%=setting.learningRecordMethod==='socketio' ? 'checked' : '' %>>
+                    <span class="ml-2">Socket.IO</span>
+                </label>
+            </div>
+        </div>
+        <button type="submit" class="bg-blue-500 text-white rounded-lg px-4 py-2">Save</button>
+    </form>
+</div>

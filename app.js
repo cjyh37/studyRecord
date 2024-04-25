@@ -5,7 +5,13 @@ const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const http = require("http");
 const expressLayouts = require("express-ejs-layouts");
+
 const authRouter = require("./routes/auth");
+const settingRouter = require('./routes/setting');
+const indexRouter = require("./routes/index");
+const lectureRouter = require("./routes/lecture");
+
+const Setting = require('./models/setting');
 
 const app = express();
 const server = http.createServer(app);
@@ -90,6 +96,7 @@ app.use(
   })
 );
 
+
 // 로그인 확인 미들웨어
 const authMiddleware = (req, res, next) => {
   if (!req.session.userId) {
@@ -129,9 +136,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// 라우터 설정
-const indexRouter = require("./routes/index");
-const lectureRouter = require("./routes/lecture");
 lectureRouter.io(server); // server 객체를 lecture 라우터에 전달
 
 // SocketIO 클라이언트 라이브러리 제공을 위한 미들웨어 추가
@@ -140,8 +144,39 @@ app.use(
   express.static(__dirname + "/node_modules/socket.io/client-dist")
 );
 
+app.use(async (req, res, next) => {
+  try {
+    if (req.session.userId) {
+      const userId = req.session.userId;
+      let setting = await Setting.findOne({ userId });
+
+      if (!setting) {
+        setting = new Setting({
+          userId,
+          siteName: 'LMS',
+          learningRecordMethod: 'polling',
+        });
+        await setting.save();
+      }
+
+      res.locals.setting = setting;
+    } else {
+      res.locals.setting = {
+        siteName: 'LMS',
+        learningRecordMethod: 'polling',
+      };
+    }
+
+    next();
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 app.use("/", indexRouter);
 app.use("/lecture", authMiddleware, lectureRouter);
+app.use('/setting', authMiddleware, settingRouter);
 
 // 서버 시작
 app.listen(3000, () => {

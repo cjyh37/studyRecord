@@ -27,17 +27,8 @@
       </ul>
       <div class="mt-4">
         <p class="text-gray-600">Learning Time: <span id="duration" class="font-bold">
-            <%= learning.formattedDuration %>
+            <%= formatDuration(learning.duration) %>
           </span></p>
-
-        <div class="mt-2">
-          <label for="method" class="block mb-1">Learning Method:</label>
-          <select id="method" class="border border-gray-300 rounded-lg px-2 py-1">
-            <option value="XHR Polling" <%=learning.method==='XHR Polling' ? 'selected' : '' %>>XHR Polling</option>
-            <option value="SSE" <%=learning.method==='SSE' ? 'selected' : '' %>>SSE</option>
-            <option value="SocketIO" <%=learning.method==='SocketIO' ? 'selected' : '' %>>SocketIO</option>
-          </select>
-        </div>
         <button id="reset-button" class="mt-4 bg-red-500 text-white rounded-lg px-4 py-2">Reset Learning</button>
       </div>
     </div>
@@ -90,13 +81,13 @@
     }
 
     // 학습 시간 업데이트 함수
-    function updateLearningTime(duration, method) {
+    function updateLearningTime(duration) {
       fetch(`/lecture/api/learning/${learningId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ duration, method }),
+        body: JSON.stringify({ duration }),
       })
         .then(response => {
           if (!response.ok) {
@@ -106,67 +97,51 @@
         })
         .then(data => {
           document.getElementById('duration').textContent = formatDuration(data.duration);
-          document.getElementById('method').value = data.lastSavedMethod;
         })
         .catch(error => {
           console.error('Error updating learning duration:', error);
         });
     }
 
+
+    // 학습 시간 업데이트 시작
+    function startUpdatingLearningTime() {
+      let duration = <%= learning.duration %>;
+
+      const durationElement = document.getElementById('duration');
+
+      const intervalId = setInterval(() => {
+        duration++;
+        durationElement.textContent = formatDuration(duration);
+        updateLearningTime(duration);
+      }, 1000);
+
+      player.on('ended', () => {
+        clearInterval(intervalId);
+      });
+    }
     // 시간을 시간과 분 형식으로 변환하는 함수
     function formatDuration(duration) {
       const hours = Math.floor(duration / 3600);
       const minutes = Math.floor((duration % 3600) / 60);
-      return `${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
+      const seconds = Math.floor(duration % 60);
+      return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     }
 
-    // 학습 기록 방법 선택 이벤트 처리
-    methodSelect.addEventListener('change', function () {
-      var selectedMethod = methodSelect.value;
-      fetch(`/lecture/api/learning/${learningId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ method: selectedMethod }),
-      })
-        .then(response => {
-          if (response.ok) {
-            location.reload();
-          } else {
-            throw new Error('Error updating learning method');
-          }
-        })
-        .catch(error => {
-          console.error('Error updating learning method:', error);
-        });
-    });
+    // 환경설정에 따라 학습 시간 업데이트 방법 결정
+    function startLearningTimeUpdate() {
+      const method = '<%= setting.learningRecordMethod %>';
 
-    // 데이터 초기화 버튼 클릭 이벤트 처리
-    resetButton.addEventListener('click', function () {
-      fetch(`/lecture/api/learning/${learningId}`, {
-        method: 'DELETE',
-      })
-        .then(response => {
-          if (response.ok) {
-            location.reload();
-          } else {
-            throw new Error('Error resetting learning data');
-          }
-        })
-        .catch(error => {
-          console.error('Error resetting learning data:', error);
-        });
-    });
-
-    // 초기 학습 기록 방법에 따라 학습 시간 업데이트 시작
-    var initialMethod = '<%= learning.method %>';
-    if (initialMethod === 'XHR Polling') {
-      startXHRPolling();
-    } else if (initialMethod === 'SSE') {
-      startSSE();
-    } else if (initialMethod === 'SocketIO') {
-      startSocketIO();
+      if (method === 'polling') {
+        startUpdatingLearningTime();
+      } else if (method === 'sse') {
+        startSSE();
+      } else if (method === 'socketio') {
+        startSocketIO();
+      }
     }
+
+    player.on('play', startLearningTimeUpdate);
+
   });
 </script>

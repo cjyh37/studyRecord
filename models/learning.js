@@ -13,7 +13,7 @@ const learningSchema = new mongoose.Schema({
   },
   duration: {
     type: Number,
-    default: 0, 
+    default: 0,
   },
   method: {
     type: String,

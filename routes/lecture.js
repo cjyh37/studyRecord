@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Lecture = require("../models/lecture");
 const Learning = require("../models/learning");
+const Setting = require('../models/setting');
 const socketIO = require("socket.io");
 
 let io;
@@ -10,7 +11,8 @@ let io;
 function formatDuration(duration) {
   const hours = Math.floor(duration / 3600);
   const minutes = Math.floor((duration % 3600) / 60);
-  return `${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
+  const seconds = Math.floor(duration % 60);
+  return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 }
 
 router.io = function (server) {
@@ -44,15 +46,14 @@ router.io = function (server) {
 };
 
 // 강의 페이지 렌더링
-router.get("/:lectureId", async (req, res) => {
+router.get('/:lectureId', async (req, res) => {
   const lectureId = req.params.lectureId;
   const userId = req.session.userId;
 
   try {
     const lecture = await Lecture.findById(lectureId);
-
     if (!lecture) {
-      return res.status(404).send("Lecture not found");
+      return res.status(404).send('Lecture not found');
     }
 
     const lectureList = await Lecture.find();
@@ -67,18 +68,19 @@ router.get("/:lectureId", async (req, res) => {
       await learning.save();
     }
 
-    res.render("lecture", {
+    const setting = res.locals.setting;
+
+    res.set('Cache-Control', 'public, max-age=3600');
+    res.render('lecture', {
       lecture,
       lectureList,
-      learning: {
-        ...learning.toObject(),
-        duration: Math.floor(learning.duration),
-        formattedDuration: formatDuration(Math.floor(learning.duration)),
-      },
+      learning,
+      setting,
+      formatDuration,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).send('Internal Server Error');
   }
 });
 
@@ -114,7 +116,7 @@ router.put("/api/learning/:id", async (req, res) => {
     res.json({
       ...learning.toObject(),
       duration: learning.duration,
-    });    
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
