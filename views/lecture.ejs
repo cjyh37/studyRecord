@@ -1,0 +1,172 @@
+<div class="bg-white shadow rounded-lg p-6">
+  <h1 class="text-2xl font-bold mb-4">
+    <%= lecture.title %>
+  </h1>
+  <div class="grid grid-cols-3 gap-8">
+    <div class="col-span-2">
+      <video id="lecture-video" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto">
+        <source src="<%= lecture.videoUrl %>" type="video/mp4">
+      </video>
+      <div class="p-4 bg-gray-100 mt-4 rounded-lg">
+        <p class="text-gray-600">
+          <%= lecture.description %>
+        </p>
+      </div>
+    </div>
+    <div>
+      <h2 class="text-xl font-bold mb-2">Lecture List</h2>
+      <ul class="space-y-2">
+        <% lectureList.forEach((item)=> { %>
+          <li>
+            <a href="/lecture/<%= item._id %>"
+              class="block rounded-lg p-2 <%= item._id.toString() === lecture._id.toString() ? 'bg-blue-500 text-white' : 'bg-gray-100 hover:bg-gray-200' %>">
+              <%= item.title %>
+            </a>
+          </li>
+          <% }); %>
+      </ul>
+      <div class="mt-4">
+        <p class="text-gray-600">Learning Time: <span id="duration" class="font-bold">
+            <%= learning.formattedDuration %>
+          </span></p>
+
+        <div class="mt-2">
+          <label for="method" class="block mb-1">Learning Method:</label>
+          <select id="method" class="border border-gray-300 rounded-lg px-2 py-1">
+            <option value="XHR Polling" <%=learning.method==='XHR Polling' ? 'selected' : '' %>>XHR Polling</option>
+            <option value="SSE" <%=learning.method==='SSE' ? 'selected' : '' %>>SSE</option>
+            <option value="SocketIO" <%=learning.method==='SocketIO' ? 'selected' : '' %>>SocketIO</option>
+          </select>
+        </div>
+        <button id="reset-button" class="mt-4 bg-red-500 text-white rounded-lg px-4 py-2">Reset Learning</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/video.js@7.10.2/dist/video.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var player = videojs('lecture-video');
+    var learningId = '<%= learning._id %>';
+    var lectureDuration = <%= lecture.duration %>;
+    var methodSelect = document.getElementById('method');
+    var resetButton = document.getElementById('reset-button');
+
+    // XHR Polling
+    function startXHRPolling() {
+      var intervalId = setInterval(() => {
+        var currentTime = player.currentTime();
+        updateLearningTime(currentTime, 'XHR Polling');
+      }, 5000);
+    }
+
+    // SSE
+    function startSSE() {
+      var eventSource = new EventSource(`/lecture/sse/${learningId}`);
+      eventSource.onmessage = function (event) {
+        var data = JSON.parse(event.data);
+        document.getElementById('duration').textContent = formatDuration(data.duration);
+      };
+    }
+
+    // SocketIO
+    function startSocketIO() {
+      var socket = io();
+      socket.on('connect', function () {
+        socket.emit('join', lectureId);
+      });
+
+      player.on('timeupdate', function () {
+        var currentTime = player.currentTime();
+        socket.emit('learning', { learningId, duration: currentTime });
+      });
+
+      socket.on('updateDuration', function (data) {
+        document.getElementById('duration').textContent = formatDuration(data.duration);
+      });
+    }
+
+    // 학습 시간 업데이트 함수
+    function updateLearningTime(duration, method) {
+      fetch(`/lecture/api/learning/${learningId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ duration, method }),
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Error updating learning duration');
+          }
+          return response.json();
+        })
+        .then(data => {
+          document.getElementById('duration').textContent = formatDuration(data.duration);
+          document.getElementById('method').value = data.lastSavedMethod;
+        })
+        .catch(error => {
+          console.error('Error updating learning duration:', error);
+        });
+    }
+
+    // 시간을 시간과 분 형식으로 변환하는 함수
+    function formatDuration(duration) {
+      const hours = Math.floor(duration / 3600);
+      const minutes = Math.floor((duration % 3600) / 60);
+      return `${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
+    }
+
+    // 학습 기록 방법 선택 이벤트 처리
+    methodSelect.addEventListener('change', function () {
+      var selectedMethod = methodSelect.value;
+      fetch(`/lecture/api/learning/${learningId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ method: selectedMethod }),
+      })
+        .then(response => {
+          if (response.ok) {
+            location.reload();
+          } else {
+            throw new Error('Error updating learning method');
+          }
+        })
+        .catch(error => {
+          console.error('Error updating learning method:', error);
+        });
+    });
+
+    // 데이터 초기화 버튼 클릭 이벤트 처리
+    resetButton.addEventListener('click', function () {
+      fetch(`/lecture/api/learning/${learningId}`, {
+        method: 'DELETE',
+      })
+        .then(response => {
+          if (response.ok) {
+            location.reload();
+          } else {
+            throw new Error('Error resetting learning data');
+          }
+        })
+        .catch(error => {
+          console.error('Error resetting learning data:', error);
+        });
+    });
+
+    // 초기 학습 기록 방법에 따라 학습 시간 업데이트 시작
+    var initialMethod = '<%= learning.method %>';
+    if (initialMethod === 'XHR Polling') {
+      startXHRPolling();
+    } else if (initialMethod === 'SSE') {
+      startSSE();
+    } else if (initialMethod === 'SocketIO') {
+      startSocketIO();
+    }
+  });
+</script>
