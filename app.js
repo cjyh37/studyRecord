@@ -1,10 +1,14 @@
 // app.js
 const express = require("express");
+const dotenv = require('dotenv');
+const connectToDatabase = require('./config/database');
 const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const http = require("http");
 const expressLayouts = require("express-ejs-layouts");
+
+dotenv.config(); // .env 파일에서 환경 변수 로드
 
 const authRouter = require("./routes/auth");
 const settingRouter = require('./routes/setting');
@@ -13,75 +17,17 @@ const lectureRouter = require("./routes/lecture");
 
 const Setting = require('./models/setting');
 
+
 const app = express();
 const server = http.createServer(app);
 
 const is_init = true;
 
+let currentUser = null;
+
+
 // MongoDB 연결
-mongoose.connect("mongodb://localhost/lecturedb");
-
-const db = mongoose.connection;
-db.on("error", console.error.bind(console, "MongoDB connection error:"));
-db.once("open", () => {
-  console.log("Connected to MongoDB");
-
-  const Lecture = require("./models/lecture");
-
-  if (!is_init) {
-    // 강의 데이터 초기화
-    const lectures = [
-      {
-        _id: "5f0e8a6b0d55a6f8b8c4d4a1",
-        title: "Introduction to Web Development",
-        description:
-          "Learn the basics of web development using HTML, CSS, and JavaScript.",
-        duration: 600, // 10분
-        videoUrl: "/videos/sample.mp4",
-      },
-      {
-        _id: "5f0e8a6b0d55a6f8b8c4d4a2",
-        title: "Responsive Web Design",
-        description:
-          "Create responsive websites that adapt to different screen sizes and devices.",
-        duration: 750, // 12분 30초
-        videoUrl: "/videos/sample.mp4",
-      },
-      {
-        _id: "5f0e8a6b0d55a6f8b8c4d4a3",
-        title: "JavaScript Fundamentals",
-        description:
-          "Master the core concepts and syntax of JavaScript programming language.",
-        duration: 900, // 15분
-        videoUrl: "/videos/sample.mp4",
-      },
-      {
-        _id: "5f0e8a6b0d55a6f8b8c4d4a4",
-        title: "Database Management with SQL",
-        description:
-          "Learn how to create, query, and manage databases using SQL.",
-        duration: 840, // 14분
-        videoUrl: "/videos/sample.mp4",
-      },
-      {
-        _id: "5f0e8a6b0d55a6f8b8c4d4a5",
-        title: "Introduction to Data Structures and Algorithms",
-        description:
-          "Explore fundamental data structures and algorithms in computer science.",
-        duration: 720, // 12분
-        videoUrl: "/videos/sample.mp4",
-      },
-    ];
-
-    Lecture.insertMany(lectures)
-      .then(() => {
-        console.log("Lecture data initialized");
-      })
-      .catch((error) => {
-        console.error("Error initializing lecture data:", error);
-      });
-  }
-});
+connectToDatabase();
 
 // 세션 미들웨어 설정
 app.use(
@@ -97,11 +43,30 @@ app.use(
 );
 
 
+
+app.use(async (req, res, next) => {
+  try {
+    res.locals.setting = await Setting.findOne();
+    res.locals.currentUser = currentUser;
+
+    next();
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+
+
 // 로그인 확인 미들웨어
 const authMiddleware = (req, res, next) => {
   if (!req.session.userId) {
     return res.redirect("/auth/login");
   }
+  currentUser = {
+    _id: req.session.userId,
+  };
+
   next();
 };
 
@@ -144,39 +109,20 @@ app.use(
   express.static(__dirname + "/node_modules/socket.io/client-dist")
 );
 
-app.use(async (req, res, next) => {
-  try {
-    if (req.session.userId) {
-      const userId = req.session.userId;
-      let setting = await Setting.findOne({ userId });
-
-      if (!setting) {
-        setting = new Setting({
-          userId,
-          siteName: 'LMS',
-          learningRecordMethod: 'polling',
-        });
-        await setting.save();
-      }
-
-      res.locals.setting = setting;
-    } else {
-      res.locals.setting = {
-        siteName: 'LMS',
-        learningRecordMethod: 'polling',
-      };
-    }
-
-    next();
-  } catch (error) {
-    console.error(error);
-    next(error);
-  }
-});
-
 app.use("/", indexRouter);
 app.use("/lecture", authMiddleware, lectureRouter);
 app.use('/setting', authMiddleware, settingRouter);
+
+// 로그아웃 처리
+app.get('/auth/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error(err);
+    }
+    currentUser = null;
+    res.redirect('/');
+  });
+});
 
 // 서버 시작
 app.listen(3000, () => {

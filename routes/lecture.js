@@ -92,57 +92,26 @@ router.put("/api/learning/:id", async (req, res) => {
   try {
     const learning = await Learning.findById(learningId);
     if (!learning) {
-      return res.status(404).send("Learning not found");
+      return res.status(404).send('Learning not found');
     }
 
-    if (duration) {
-      if (duration <= learning.duration) {
-        return res.json(learning);
-      }
-
-      learning.duration = duration;
-
-      const lecture = await Lecture.findById(learning.lectureId);
-      if (duration >= lecture.duration) {
-        learning.duration = lecture.duration;
-      }
+    if (duration <= learning.duration) {
+      return res.json(learning);
     }
 
-    if (method) {
-      learning.method = method;
+    learning.duration = duration;
+
+    const lecture = await Lecture.findById(learning.lectureId);
+    if (duration >= lecture.duration) {
+      learning.duration = lecture.duration;
     }
 
     await learning.save();
-    res.json({
-      ...learning.toObject(),
-      duration: learning.duration,
-    });
+    res.json(learning);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
-// 강의 정보 가져오기 함수
-async function getLecture(lectureId) {
-  // 실제로는 데이터베이스에서 강의 정보를 가져와야 합니다.
-  // 여기서는 예시로 하드코딩된 데이터를 사용합니다.
-  return {
-    id: lectureId,
-    title: "Sample Lecture",
-    videoUrl: "/videos/sample.mp4",
-  };
-}
-
-// 강의 목록 가져오기 함수
-async function getLectureList(lectureId) {
-  // 실제로는 데이터베이스에서 강의 목록을 가져와야 합니다.
-  // 여기서는 예시로 하드코딩된 데이터를 사용합니다.
-  return [
-    { id: "1", title: "Lecture 1" },
-    { id: "2", title: "Lecture 2" },
-    { id: "3", title: "Lecture 3" },
-  ];
-}
 
 module.exports = router;

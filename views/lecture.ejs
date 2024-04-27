@@ -65,18 +65,22 @@
 
     // SocketIO
     function startSocketIO() {
-      var socket = io();
-      socket.on('connect', function () {
-        socket.emit('join', lectureId);
+      const socket = io();
+
+      socket.emit('join', '<%= lecture._id %>');
+
+      let duration = <%= learning.duration %>;
+      const durationElement = document.getElementById('duration');
+
+      player.on('timeupdate', () => {
+        duration = player.currentTime();
+        durationElement.textContent = formatDuration(duration);
+        socket.emit('learning', { learningId: '<%= learning._id %>', duration });
       });
 
-      player.on('timeupdate', function () {
-        var currentTime = player.currentTime();
-        socket.emit('learning', { learningId, duration: currentTime });
-      });
-
-      socket.on('updateDuration', function (data) {
-        document.getElementById('duration').textContent = formatDuration(data.duration);
+      socket.on('updateDuration', (data) => {
+        duration = data.duration;
+        durationElement.textContent = formatDuration(duration);
       });
     }
 

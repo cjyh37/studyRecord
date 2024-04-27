@@ -15,11 +15,6 @@ const learningSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  method: {
-    type: String,
-    enum: ['XHR Polling', 'SSE', 'SocketIO'],
-    default: 'XHR Polling',
-  },
 });
 
 learningSchema.index({ userId: 1, lectureId: 1 }, { unique: true });

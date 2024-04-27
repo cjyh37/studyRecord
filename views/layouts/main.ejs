@@ -17,8 +17,16 @@
         </a>
         <ul class="flex space-x-4">
           <li><a href="/" class="text-gray-600 hover:text-gray-800">Home</a></li>
-          <li><a href="/" class="text-gray-600 hover:text-gray-800">Lectures</a></li>
-          <li><a href="/setting" class="text-gray-600 hover:text-gray-800">Settings</a></li>
+
+          <% if (currentUser) { %>
+            <li><a href="/" class="text-gray-600 hover:text-gray-800">Lectures</a></li>
+            <li><a href="/setting" class="text-gray-600 hover:text-gray-800">Settings</a></li>
+            <li><a href="/auth/logout" class="text-gray-600 hover:text-gray-800">Logout</a></li>
+            <% } else { %>
+              <li><a href="/auth/login" class="text-gray-600 hover:text-gray-800">Login</a></li>
+              <% } %>
+
+
         </ul>
       </div>
     </div>

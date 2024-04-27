@@ -5,12 +5,10 @@ const Setting = require('../models/setting');
 // 환경설정 페이지 렌더링
 router.get('/', async (req, res) => {
     try {
-        const userId = req.session.userId;
-        let setting = await Setting.findOne({ userId });
+        let setting = await Setting.findOne();
 
         if (!setting) {
             setting = new Setting({
-                userId,
                 siteName: 'LMS',
                 learningRecordMethod: 'polling',
             });
@@ -27,13 +25,12 @@ router.get('/', async (req, res) => {
 // 환경설정 업데이트
 router.post('/', async (req, res) => {
     try {
-        const userId = req.session.userId;
         const { siteName, learningRecordMethod } = req.body;
 
         const setting = await Setting.findOneAndUpdate(
-            { userId },
+            {},
             { siteName, learningRecordMethod },
-            { new: true }
+            { new: true, upsert: true }
         );
 
         res.locals.setting = setting;
