@@ -49,6 +49,30 @@ const lectures = [
         duration: 360, // 6분
         videoUrl: "/videos/sample.mp4",
         thumbnailUrl: "/images/data-structures.webp"
+    },
+    {
+        id: "5f0e8a6b0d55a6f8b8c4d4a6",
+        title: "Node.js 백엔드 개발",
+        description: "Node.js를 사용하여 서버 측 애플리케이션을 개발하는 방법을 배웁니다.",
+        duration: 420, // 7분
+        videoUrl: "/videos/sample.mp4",
+        thumbnailUrl: "/images/nodejs-backend.webp"
+    },
+    {
+        id: "5f0e8a6b0d55a6f8b8c4d4a7",
+        title: "ReactJS 프론트엔드 개발",
+        description: "ReactJS 라이브러리를 사용하여 인터랙티브한 사용자 인터페이스를 구축합니다.",
+        duration: 480, // 8분
+        videoUrl: "/videos/sample.mp4",
+        thumbnailUrl: "/images/reactjs-frontend.webp"
+    },
+    {
+        id: "5f0e8a6b0d55a6f8b8c4d4a8",
+        title: "Git 버전 관리",
+        description: "Git을 사용하여 코드의 버전을 관리하고 협업하는 방법을 배웁니다.",
+        duration: 330, // 5분 30초
+        videoUrl: "/videos/sample.mp4",
+        thumbnailUrl: "/images/git-version-control.webp"
     }
 ];
 
