@@ -7,7 +7,7 @@
     "start": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "init": "node initDatabase.js",
-    "tailwind": "npx tailwindcss -i ./src/input.css -o ./public/css/tailwindcss.css"
+    "tailwind": "npx tailwindcss -i ./src/input.css -o ./public/css/tailwindcss.css --watch"
   },
   "keywords": [],
   "author": "",
