@@ -11,51 +11,51 @@ const Learning = require('./models/learning');
 // 강의 데이터 초기화
 const lectures = [
     {
-        _id: "5f0e8a6b0d55a6f8b8c4d4a1",
-        title: "Introduction to Web Development",
-        description:
-            "Learn the basics of web development using HTML, CSS, and JavaScript.",
-        duration: 600, // 10분
+        id: "5f0e8a6b0d55a6f8b8c4d4a1",
+        title: "웹 개발 입문",
+        description: "HTML, CSS, JavaScript를 사용하여 웹 개발의 기초를 배웁니다.",
+        duration: 300, // 5분
         videoUrl: "/videos/sample.mp4",
+        thumbnailUrl: "/images/web-dev-intro.webp" // Placeholder URL
     },
     {
-        _id: "5f0e8a6b0d55a6f8b8c4d4a2",
-        title: "Responsive Web Design",
-        description:
-            "Create responsive websites that adapt to different screen sizes and devices.",
-        duration: 750, // 12분 30초
+        id: "5f0e8a6b0d55a6f8b8c4d4a2",
+        title: "반응형 웹 디자인",
+        description: "다양한 화면 크기와 장치에 적응하는 반응형 웹사이트를 만듭니다.",
+        duration: 375, // 6분 15초
         videoUrl: "/videos/sample.mp4",
+        thumbnailUrl: "/images/responsive-design.webp"
     },
     {
-        _id: "5f0e8a6b0d55a6f8b8c4d4a3",
-        title: "JavaScript Fundamentals",
-        description:
-            "Master the core concepts and syntax of JavaScript programming language.",
-        duration: 900, // 15분
+        id: "5f0e8a6b0d55a6f8b8c4d4a3",
+        title: "JavaScript 기초",
+        description: "JavaScript 프로그래밍 언어의 핵심 개념과 문법을 마스터합니다.",
+        duration: 450, // 7분 30초
         videoUrl: "/videos/sample.mp4",
+        thumbnailUrl: "/images/javascript-basics.webp"
     },
     {
-        _id: "5f0e8a6b0d55a6f8b8c4d4a4",
-        title: "Database Management with SQL",
-        description:
-            "Learn how to create, query, and manage databases using SQL.",
-        duration: 840, // 14분
+        id: "5f0e8a6b0d55a6f8b8c4d4a4",
+        title: "SQL을 사용한 데이터베이스 관리",
+        description: "SQL을 사용하여 데이터베이스를 생성, 쿼리 및 관리하는 방법을 배웁니다.",
+        duration: 300, // 5분
         videoUrl: "/videos/sample.mp4",
+        thumbnailUrl: "/images/sql-database.webp"
     },
     {
-        _id: "5f0e8a6b0d55a6f8b8c4d4a5",
-        title: "Introduction to Data Structures and Algorithms",
-        description:
-            "Explore fundamental data structures and algorithms in computer science.",
-        duration: 720, // 12분
+        id: "5f0e8a6b0d55a6f8b8c4d4a5",
+        title: "자료구조와 알고리즘 입문",
+        description: "컴퓨터 과학에서 기본적인 자료구조와 알고리즘을 탐색합니다.",
+        duration: 360, // 6분
         videoUrl: "/videos/sample.mp4",
-    },
+        thumbnailUrl: "/images/data-structures.webp"
+    }
 ];
 
 // 환경설정 데이터 초기화
 const settings = [
     {
-        siteName: 'LMS',
+        siteName: '학습관리시스템',
         learningRecordMethod: 'polling',
     }
 ];

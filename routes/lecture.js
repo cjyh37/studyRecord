@@ -1,33 +1,43 @@
 const express = require("express");
 const router = express.Router();
+const socketIO = require("socket.io");
+const NodeCache = require('node-cache');
 const Lecture = require("../models/lecture");
 const Learning = require("../models/learning");
 const Setting = require('../models/setting');
-const socketIO = require("socket.io");
 
-let io;
+const cache = new NodeCache();
 
 router.io = function (server) {
   io = socketIO(server);
 
   io.on("connection", (socket) => {
-    console.log("A user connected");
+    console.log("connected");
 
     socket.on("join", (learningId) => {
       socket.join(learningId);
     });
 
+
     socket.on("learning", async (data) => {
-      const { learningId, currentTime } = data;
+      const { learningId, userId, duration } = data;
       try {
-        const learning = await Learning.findById(learningId);
+        const learning = await Learning.findById(learningId, userId);
         if (learning) {
-          learning.duration = currentTime;
+          learning.duration = duration;
           await learning.save();
           io.to(learningId).emit("updateDuration", learning);
         }
       } catch (error) {
         console.error("Error updating learning duration:", error);
+      }
+    });
+
+    // 소켓 이벤트 리스너 등록
+    socket.on('updateDuration', function (data) {
+      if (data.lectureId === '<%= lecture._id %>') {
+        var receivedProgress = (data.duration / lectureDuration) * 100;
+        progressBar.style.width = receivedProgress + '%';
       }
     });
 
@@ -37,19 +47,62 @@ router.io = function (server) {
   });
 };
 
+// SSE 엔드포인트
+router.get('/sse/:learningId', async (req, res) => {
+  const learningId = req.params.learningId;
+
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+  });
+
+
+  // 1초마다 학습 시간 저장
+  const intervalId = setInterval(async () => {
+    try {
+      const learning = await Learning.findById(learningId);
+      if (learning) {
+        learning.duration++;
+        await learning.save();
+        res.write(`data: ${JSON.stringify(learning)}\n\n`);
+      }
+    } catch (error) {
+      console.error('Error saving learning time with SSE:', error);
+    }
+  }, 1000);
+
+  // 연결 종료 시 인터벌 클리어
+  req.on('close', () => {
+    clearInterval(intervalId);
+    res.end();
+  });
+});
+
 // 강의 페이지 렌더링
 router.get('/:lectureId', async (req, res) => {
   const lectureId = req.params.lectureId;
   const userId = req.session.userId;
 
   try {
-    const lecture = await Lecture.findById(lectureId);
+    // 강의 정보 캐싱
+    let lecture = cache.get(`lecture_${lectureId}`);
     if (!lecture) {
-      return res.status(404).send('Lecture not found');
+      lecture = await Lecture.findById(lectureId);
+      if (!lecture) {
+        return res.status(404).send('Lecture not found');
+      }
+      cache.set(`lecture_${lectureId}`, lecture);
     }
 
-    const lectureList = await Lecture.find();
+    // 강의 목록 캐싱
+    let lectureList = cache.get('lectureList');
+    if (!lectureList) {
+      lectureList = await Lecture.find();
+      cache.set('lectureList', lectureList);
+    }
 
+    let learningRecords = await Learning.find({ userId });
     let learning = await Learning.findOne({ userId, lectureId });
     if (!learning) {
       learning = new Learning({
@@ -60,13 +113,14 @@ router.get('/:lectureId', async (req, res) => {
       await learning.save();
     }
 
-    const setting = res.locals.setting;
+    let setting = res.locals.setting;
 
-    res.set('Cache-Control', 'public, max-age=3600');
+    res.set('Cache-Control', 'no-cache');
     res.render('lecture', {
       lecture,
       lectureList,
       learning,
+      learningRecords,
       setting,
     });
   } catch (error) {

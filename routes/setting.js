@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const NodeCache = require('node-cache');
+const cache = new NodeCache();
 const Setting = require('../models/setting');
 
 // 환경설정 페이지 렌더링
@@ -34,7 +36,6 @@ router.post('/', async (req, res) => {
         );
 
         res.locals.setting = setting;
-
         res.redirect('/setting');
     } catch (error) {
         console.error(error);

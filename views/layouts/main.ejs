@@ -1,10 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 
 <head>
-  <title>LMS</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/video.js@7.10.2/dist/video-js.min.css" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="Referrer" content="origin">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=1190">
+
+  <title>
+    <%= setting.siteName %>
+  </title>
+  <link rel="stylesheet" href="/videojs/video-js.min.css">
+  <link rel="stylesheet" href="/css/tailwindcss.css">
   <link rel="stylesheet" href="/css/styles.css">
 </head>
 
@@ -12,7 +19,7 @@
   <nav class="bg-white shadow">
     <div class="container mx-auto px-8 py-8">
       <div class="flex items-center justify-between">
-        <a href="/" class="text-xl font-bold text-gray-800">
+        <a href="/" class="text-2xl font-bold text-gray-800">
           <%= setting.siteName %>
         </a>
         <ul class="flex space-x-4">

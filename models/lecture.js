@@ -5,6 +5,7 @@ const lectureSchema = new mongoose.Schema({
   description: String,
   duration: Number,
   videoUrl: String,
+  thumbnailUrl: String,
 });
 
 const Lecture = mongoose.model('Lecture', lectureSchema);
