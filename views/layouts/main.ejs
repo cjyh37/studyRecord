@@ -10,20 +10,19 @@
 
 <body class="bg-gray-100">
   <nav class="bg-white shadow">
-    <div class="container mx-auto px-4 py-2">
+    <div class="container mx-auto px-8 py-8">
       <div class="flex items-center justify-between">
         <a href="/" class="text-xl font-bold text-gray-800">
           <%= setting.siteName %>
         </a>
         <ul class="flex space-x-4">
-          <li><a href="/" class="text-gray-600 hover:text-gray-800">Home</a></li>
+          <li><a href="/" class="text-gray-600 hover:text-gray-800">강의</a></li>
 
           <% if (currentUser) { %>
-            <li><a href="/" class="text-gray-600 hover:text-gray-800">Lectures</a></li>
-            <li><a href="/setting" class="text-gray-600 hover:text-gray-800">Settings</a></li>
-            <li><a href="/auth/logout" class="text-gray-600 hover:text-gray-800">Logout</a></li>
+            <li><a href="/setting" class="text-gray-600 hover:text-gray-800">환경설정</a></li>
+            <li><a href="/auth/logout" class="text-gray-600 hover:text-gray-800">로그아웃</a></li>
             <% } else { %>
-              <li><a href="/auth/login" class="text-gray-600 hover:text-gray-800">Login</a></li>
+              <li><a href="/auth/login" class="text-gray-600 hover:text-gray-800">로그인</a></li>
               <% } %>
 
 
@@ -38,7 +37,7 @@
 
   <footer class="bg-white shadow mt-8">
     <div class="container mx-auto px-4 py-4">
-      <p class="text-center text-gray-600">&copy; 2023 LMS. All rights reserved.</p>
+      <p class="text-center text-gray-600">&copy; 2024 <%= setting.siteName %>. All rights reserved.</p>
     </div>
   </footer>
 </body>

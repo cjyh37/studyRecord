@@ -47,7 +47,7 @@ app.use(
 app.use(async (req, res, next) => {
   try {
     res.locals.setting = await Setting.findOne();
-    res.locals.currentUser = currentUser;
+    res.locals.currentUser = req.session.userId;
 
     next();
   } catch (error) {
@@ -112,17 +112,6 @@ app.use(
 app.use("/", indexRouter);
 app.use("/lecture", authMiddleware, lectureRouter);
 app.use('/setting', authMiddleware, settingRouter);
-
-// 로그아웃 처리
-app.get('/auth/logout', (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      console.error(err);
-    }
-    currentUser = null;
-    res.redirect('/');
-  });
-});
 
 // 서버 시작
 app.listen(3000, () => {

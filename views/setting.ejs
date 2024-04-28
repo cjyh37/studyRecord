@@ -1,13 +1,13 @@
 <div class="bg-white shadow rounded-lg p-6">
-    <h1 class="text-2xl font-bold mb-4">Settings</h1>
+    <h1 class="text-2xl font-bold mb-4">환경설정</h1>
     <form action="/setting" method="POST">
         <div class="mb-4">
-            <label for="siteName" class="block mb-2">Site Name</label>
+            <label for="siteName" class="block mb-2">사이트 이름</label>
             <input type="text" id="siteName" name="siteName" class="w-full border border-gray-300 rounded-lg px-3 py-2"
                 value="<%= setting.siteName %>" required>
         </div>
         <div class="mb-4">
-            <label class="block mb-2">Learning Record Method</label>
+            <label class="block mb-2">학습 기록 방식</label>
             <div>
                 <label class="inline-flex items-center">
                     <input type="radio" name="learningRecordMethod" value="polling"
@@ -30,6 +30,6 @@
                 </label>
             </div>
         </div>
-        <button type="submit" class="bg-blue-500 text-white rounded-lg px-4 py-2">Save</button>
+        <button type="submit" class="bg-blue-500 text-white rounded-lg px-4 py-2">저장</button>
     </form>
 </div>

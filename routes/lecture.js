@@ -7,14 +7,6 @@ const socketIO = require("socket.io");
 
 let io;
 
-// 시간을 시간과 분 형식으로 변환하는 함수
-function formatDuration(duration) {
-  const hours = Math.floor(duration / 3600);
-  const minutes = Math.floor((duration % 3600) / 60);
-  const seconds = Math.floor(duration % 60);
-  return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-}
-
 router.io = function (server) {
   io = socketIO(server);
 
@@ -76,7 +68,6 @@ router.get('/:lectureId', async (req, res) => {
       lectureList,
       learning,
       setting,
-      formatDuration,
     });
   } catch (error) {
     console.error(error);
@@ -111,6 +102,25 @@ router.put("/api/learning/:id", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// 학습 데이터 초기화 API
+router.delete('/api/learning/:id', async (req, res) => {
+  const learningId = req.params.id;
+  const userId = req.session.userId;
+
+  try {
+    const learning = await Learning.findOneAndDelete({ _id: learningId, userId });
+
+    if (!learning) {
+      return res.status(404).json({ error: 'Learning not found' });
+    }
+
+    res.sendStatus(204);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

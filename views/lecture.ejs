@@ -14,7 +14,7 @@
       </div>
     </div>
     <div>
-      <h2 class="text-xl font-bold mb-2">Lecture List</h2>
+      <h2 class="text-xl font-bold mb-2">강의 목록</h2>
       <ul class="space-y-2">
         <% lectureList.forEach((item)=> { %>
           <li>
@@ -26,10 +26,10 @@
           <% }); %>
       </ul>
       <div class="mt-4">
-        <p class="text-gray-600">Learning Time: <span id="duration" class="font-bold">
-            <%= formatDuration(learning.duration) %>
+        <p class="text-gray-600">학습시간 : <span id="duration" class="font-bold">
+            0:00:00
           </span></p>
-        <button id="reset-button" class="mt-4 bg-red-500 text-white rounded-lg px-4 py-2">Reset Learning</button>
+        <button id="reset-button" class="mt-4 bg-red-500 text-white rounded-lg px-4 py-2">학습기록 초기화</button>
       </div>
     </div>
   </div>
@@ -43,109 +43,146 @@
     var player = videojs('lecture-video');
     var learningId = '<%= learning._id %>';
     var lectureDuration = <%= lecture.duration %>;
-    var methodSelect = document.getElementById('method');
+    var learingDuration = <%= learning.duration %>;
+    var userId = '<%= String(currentUser._id) %>';
+    var learningRecordMethod = '<%= setting.learningRecordMethod %>';
+
+    var currentTime = learingDuration || 0;
+    var intervalId;
     var resetButton = document.getElementById('reset-button');
 
-    // XHR Polling
-    function startXHRPolling() {
-      var intervalId = setInterval(() => {
-        var currentTime = player.currentTime();
-        updateLearningTime(currentTime, 'XHR Polling');
-      }, 5000);
+    // 비디오 플레이 버튼 클릭 시 학습 시간 업데이트 시작
+    player.on('play', function () {
+      startUpdatingLearningTime();
+    });
+
+    // 비디오 일시정지 시 학습 시간 업데이트 중지
+    player.on('pause', function () {
+      stopUpdatingLearningTime();
+    });
+
+    // 비디오 종료 시 학습 시간 업데이트 중지
+    player.on('ended', function () {
+      stopUpdatingLearningTime();
+    });
+
+    // 학습 시간 업데이트 시작
+    function startUpdatingLearningTime() {
+      intervalId = setInterval(updateLearningTime, 1000);
     }
 
-    // SSE
-    function startSSE() {
-      var eventSource = new EventSource(`/lecture/sse/${learningId}`);
-      eventSource.onmessage = function (event) {
-        var data = JSON.parse(event.data);
-        document.getElementById('duration').textContent = formatDuration(data.duration);
-      };
+    // 학습 시간 업데이트 중지
+    function stopUpdatingLearningTime() {
+      clearInterval(intervalId);
     }
 
-    // SocketIO
-    function startSocketIO() {
-      const socket = io();
+    // 학습 시간 업데이트
+    function updateLearningTime() {
+      if (currentTime >= lectureDuration) {
+        stopUpdatingLearningTime();
+        return;
+      }
 
-      socket.emit('join', '<%= lecture._id %>');
+      currentTime++;
+      document.getElementById('duration').textContent = formatDuration(currentTime);
 
-      let duration = <%= learning.duration %>;
-      const durationElement = document.getElementById('duration');
-
-      player.on('timeupdate', () => {
-        duration = player.currentTime();
-        durationElement.textContent = formatDuration(duration);
-        socket.emit('learning', { learningId: '<%= learning._id %>', duration });
-      });
-
-      socket.on('updateDuration', (data) => {
-        duration = data.duration;
-        durationElement.textContent = formatDuration(duration);
-      });
+      if (learningRecordMethod === 'polling') {
+        if (currentTime % 5 === 0) {
+          saveLearningTimePolling();
+        }
+      } else if (learningRecordMethod === 'sse') {
+        saveLearningTimeSSE();
+      } else if (learningRecordMethod === 'socketio') {
+        saveLearningTimeSocketIO();
+      }
     }
 
-    // 학습 시간 업데이트 함수
-    function updateLearningTime(duration) {
+    // Polling 방식으로 학습 시간 저장
+    function saveLearningTimePolling() {
       fetch(`/lecture/api/learning/${learningId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ duration }),
+        body: JSON.stringify({ duration: currentTime }),
       })
-        .then(response => {
+        .then((response) => {
           if (!response.ok) {
-            throw new Error('Error updating learning duration');
+            throw new Error('Error saving learning time');
           }
-          return response.json();
         })
-        .then(data => {
-          document.getElementById('duration').textContent = formatDuration(data.duration);
-        })
-        .catch(error => {
-          console.error('Error updating learning duration:', error);
+        .catch((error) => {
+          console.error('Error saving learning time:', error);
         });
     }
 
+    // SSE 방식으로 학습 시간 저장
+    function saveLearningTimeSSE() {
+      fetch(`/lecture/sse/${learningId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ duration: currentTime }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Error saving learning time');
+          }
+        })
+        .catch((error) => {
+          console.error('Error saving learning time:', error);
+        });
+    }
 
-    // 학습 시간 업데이트 시작
-    function startUpdatingLearningTime() {
-      let duration = <%= learning.duration %>;
-
-      const durationElement = document.getElementById('duration');
-
-      const intervalId = setInterval(() => {
-        duration++;
-        durationElement.textContent = formatDuration(duration);
-        updateLearningTime(duration);
-      }, 1000);
-
-      player.on('ended', () => {
-        clearInterval(intervalId);
+    // Socket.IO 방식으로 학습 시간 저장
+    function saveLearningTimeSocketIO() {
+      socket.emit('learning', {
+        learningId: learningId,
+        userId: userId,
+        duration: currentTime,
       });
     }
+
     // 시간을 시간과 분 형식으로 변환하는 함수
     function formatDuration(duration) {
-      const hours = Math.floor(duration / 3600);
-      const minutes = Math.floor((duration % 3600) / 60);
-      const seconds = Math.floor(duration % 60);
-      return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+      var hours = Math.floor(duration / 3600);
+      var minutes = Math.floor((duration % 3600) / 60);
+      var seconds = duration % 60;
+      return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''
+        }${seconds}`;
     }
 
-    // 환경설정에 따라 학습 시간 업데이트 방법 결정
-    function startLearningTimeUpdate() {
-      const method = '<%= setting.learningRecordMethod %>';
+    // 학습 기록 초기화 버튼 클릭 이벤트 처리
+    resetButton.addEventListener('click', function () {
+      resetLearningTime();
+    });
 
-      if (method === 'polling') {
-        startUpdatingLearningTime();
-      } else if (method === 'sse') {
-        startSSE();
-      } else if (method === 'socketio') {
-        startSocketIO();
-      }
+    // 학습 기록 초기화
+    function resetLearningTime() {
+      fetch(`/lecture/api/learning/${learningId}`, {
+        method: 'DELETE',
+      })
+        .then((response) => {
+          if (response.ok) {
+            currentTime = 0;
+            document.getElementById('duration').textContent = formatDuration(currentTime);
+            stopUpdatingLearningTime();
+
+            location.reload();
+          } else {
+            throw new Error('Error resetting learning time');
+          }
+        })
+        .catch((error) => {
+          console.error('Error resetting learning time:', error);
+        });
     }
 
-    player.on('play', startLearningTimeUpdate);
+    function init() {
+      document.getElementById('duration').textContent = formatDuration(learingDuration);
+    }
 
+    init();
   });
 </script>
