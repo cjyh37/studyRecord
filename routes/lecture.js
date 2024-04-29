@@ -12,7 +12,7 @@ router.io = function (server) {
   io = socketIO(server);
 
   io.on("connection", (socket) => {
-    console.log("connected");
+    console.log("socket connected");
 
     socket.on("join", (learningId) => {
       socket.join(learningId);
@@ -26,23 +26,15 @@ router.io = function (server) {
         if (learning) {
           learning.duration = duration;
           await learning.save();
-          io.to(learningId).emit("updateDuration", learning);
+          //io.to(learningId).emit("updateDuration", learning);
         }
       } catch (error) {
         console.error("Error updating learning duration:", error);
       }
     });
 
-    // 소켓 이벤트 리스너 등록
-    socket.on('updateDuration', function (data) {
-      if (data.lectureId === '<%= lecture._id %>') {
-        var receivedProgress = (data.duration / lectureDuration) * 100;
-        progressBar.style.width = receivedProgress + '%';
-      }
-    });
-
     socket.on("disconnect", () => {
-      console.log("A user disconnected");
+      console.log("socket disconnected");
     });
   });
 };

@@ -212,6 +212,7 @@
         // Socket.IO 방식으로 학습 시간 저장
         function saveLearningTimeSocketIO() {
           if (!socket) socket = io();
+          
           socket.emit('learning', {
             learningId: learningId,
             userId: userId,
