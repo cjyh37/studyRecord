@@ -178,4 +178,10 @@ router.delete('/api/learning/:id', async (req, res) => {
   }
 });
 
+// 캐시 삭제 라우트
+router.post('/clear-cache', (req, res) => {
+  cache.flushAll();
+  res.sendStatus(200);
+});
+
 module.exports = router;
