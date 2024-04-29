@@ -6,11 +6,11 @@
           0:00:00
         </span></p>
   </h1>
-  <div class="grid grid-cols-3 gap-8">
-    <div class="col-span-2">
-      <video id="lecture-video" class="rounded-lg video-js vjs-default-skin vjs-big-play-centered"
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div class="md:col-span-2">
+      <video id="lecture-video" class="rounded-lg video-js vjs-default-skin vjs-big-play-centered w-full"
         poster="<%= lecture.thumbnailUrl %>" controls>
-        <source src="<%= lecture.videoUrl %>" type="video/mp4">
+        <source src="<%= process.env.mode == 'test' ? '/videos/sample.mp4' : lecture.videoUrl %>" type="video/mp4">
       </video>
       <div class="p-4 bg-gray-200 mt-4 rounded-lg">
         <p class="text-gray-500">
@@ -34,13 +34,12 @@
               </div>
               <div class="mt-1 relative">
                 <div class="bg-gray-300 rounded-full h-1">
-
                   <% const learningRecord=learningRecords.find(record=> record.lectureId.toString() ===
                     item._id.toString()); %>
                     <div <%=item._id.toString()===lecture._id.toString() ? "id=current-lecture-progress" : "" %>
                       class="<%= (learningRecord && learningRecord.duration>= item.duration) ? 'bg-emerald-400' :
                         'bg-cyan-500' %> h-1
-                        rounded-full"
+                        transition-all duration-500 ease-in-out rounded-full"
                         style="width: <%= learningRecord ? (learningRecord.duration / item.duration * 100) : 0 %>%">
                     </div>
                 </div>
@@ -49,8 +48,8 @@
           </li>
           <% }); %>
       </ul>
-      <div class="mt-4">
-        <button id="reset-button" class="mt-4 bg-gray-500 text-white rounded-lg px-4 py-2">학습기록 초기화</button>
+      <div class="mt-4 flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4">
+        <button id="reset-button" class="bg-gray-500 text-white rounded-lg px-4 py-2">학습기록 초기화</button>
         <button id="clear-cache-button" class="bg-gray-500 text-white rounded-lg px-4 py-2">캐시 초기화</button>
       </div>
     </div>
@@ -212,7 +211,7 @@
         // Socket.IO 방식으로 학습 시간 저장
         function saveLearningTimeSocketIO() {
           if (!socket) socket = io();
-          
+
           socket.emit('learning', {
             learningId: learningId,
             userId: userId,

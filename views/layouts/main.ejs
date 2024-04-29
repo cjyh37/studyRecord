@@ -1,15 +1,13 @@
 <!DOCTYPE html>
 <html lang="ko">
-<meta charset="utf-8">
-<meta name="Referrer" content="origin">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=1190">
 
 <head>
   <meta charset="utf-8">
   <meta name="Referrer" content="origin">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=1190">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 
   <title>
     <%= setting.siteName %>
@@ -21,23 +19,34 @@
 
 <body class="bg-gray-100">
   <nav class="bg-white shadow">
-    <div class="container mx-auto px-8 py-6">
-      <div class="flex items-center justify-between">
-        <a href="/" class="text-2xl font-bold text-gray-800">
-          <%= setting.siteName %>
-        </a>
-        <ul class="flex space-x-4">
-          <li><a href="/" class="text-gray-600 hover:text-gray-800">강의</a></li>
+    <div class="container mx-auto px-4 py-6">
+      <div class="flex items-center justify-between flex-wrap">
+        <div class="flex items-center flex-shrink-0 text-xl font-bold text-gray-800 mr-6">
+          <a href="/" class="clock-font">
+            <%= setting.siteName %>
+          </a>
+        </div>
+        <div class="block lg:hidden">
+          <button id="nav-toggle"
+            class="flex items-center px-3 py-2 border rounded text-gray-500 border-gray-600 hover:text-gray-800 hover:border-blue-500 appearance-none focus:outline-none">
+            <svg class="fill-current h-3 w-3" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <title>Menu</title>
+              <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z" />
+            </svg>
+          </button>
+        </div>
+        <div id="nav-menu" class="w-full flex-grow lg:flex lg:items-center lg:w-auto hidden lg:block pt-6 lg:pt-0">
+          <ul class="list-reset lg:flex justify-end flex-1 items-center">
+            <li class="mr-6"><a href="/" class="text-gray-600 hover:text-gray-800">강의</a></li>
 
-          <% if (currentUser) { %>
-            <li><a href="/setting" class="text-gray-600 hover:text-gray-800">환경설정</a></li>
-            <li><a href="/auth/logout" class="text-gray-600 hover:text-gray-800">로그아웃</a></li>
-            <% } else { %>
-              <li><a href="/auth/login" class="text-gray-600 hover:text-gray-800">로그인</a></li>
-              <% } %>
-
-
-        </ul>
+            <% if (currentUser) { %>
+              <li class="mr-6"><a href="/setting" class="text-gray-600 hover:text-gray-800">환경설정</a></li>
+              <li><a href="/auth/logout" class="text-gray-600 hover:text-gray-800">로그아웃</a></li>
+              <% } else { %>
+                <li><a href="/auth/login" class="text-gray-600 hover:text-gray-800">로그인</a></li>
+                <% } %>
+          </ul>
+        </div>
       </div>
     </div>
   </nav>
@@ -51,6 +60,17 @@
       <p class="text-center text-gray-600">&copy; 2024 <%= setting.siteName %>. All rights reserved.</p>
     </div>
   </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const navToggle = document.getElementById('nav-toggle');
+      const navMenu = document.getElementById('nav-menu');
+
+      navToggle.addEventListener('click', function () {
+        navMenu.classList.toggle('hidden');
+      });
+    });
+  </script>
 </body>
 
 </html>
