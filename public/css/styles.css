@@ -1,4 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap');
+@font-face {
+  font-family: 'Rajdhani';
+  src: url('/fonts/Rajdhani-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Rajdhani';
+  src: url('/fonts/Rajdhani-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
 
 .video-js {
   width: 100%;
@@ -19,5 +31,8 @@
 .clock {
   text-align: center;
   width: 100px;
+}
+
+.clock-font {
   font-family: 'Rajdhani', sans-serif;
 }

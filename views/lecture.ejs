@@ -1,7 +1,7 @@
 <div class="bg-white shadow rounded-lg p-6">
   <h1 class="text-2xl font-bold mb-4">
     <%= lecture.title %>
-      <span class="clock float-right bg-neutral-900 px-2 py-1 text-2xl text-white rounded-lg">
+      <span class="clock clock-font float-right bg-sky-500 px-2 py-1 text-2xl text-white rounded-lg">
         <span id="duration" class="font-bold">
           0:00:00
         </span></p>
@@ -13,7 +13,7 @@
         <source src="<%= lecture.videoUrl %>" type="video/mp4">
       </video>
       <div class="p-4 bg-gray-200 mt-4 rounded-lg">
-        <p class="text-gray-600">
+        <p class="text-gray-500">
           <%= lecture.description %>
         </p>
       </div>
@@ -23,7 +23,7 @@
         <% lectureList.forEach((item)=> { %>
           <li>
             <a href="/lecture/<%= item._id %>"
-              class="block rounded-lg py-2 px-4 <%= item._id.toString() === lecture._id.toString() ? 'bg-gray-800 text-white' : 'bg-gray-100 hover:bg-gray-200' %>">
+              class="block rounded-lg py-2 px-3 <%= item._id.toString() === lecture._id.toString() ? 'bg-gray-800 text-white' : 'bg-gray-100 hover:bg-gray-200' %>">
               <div class="flex justify-between items-center">
                 <span>
                   <%= item.title %>
@@ -49,9 +49,9 @@
           </li>
           <% }); %>
       </ul>
-      <div class="mt-11">
-        <button id="reset-button" class="mt-4 bg-gray-600 text-white rounded-lg px-4 py-2">학습기록 초기화</button>
-        <button id="clear-cache-button" class="bg-yellow-500 text-white rounded-lg px-4 py-2">캐시 초기화</button>
+      <div class="mt-4">
+        <button id="reset-button" class="mt-4 bg-gray-500 text-white rounded-lg px-4 py-2">학습기록 초기화</button>
+        <button id="clear-cache-button" class="bg-gray-500 text-white rounded-lg px-4 py-2">캐시 초기화</button>
       </div>
     </div>
   </div>
