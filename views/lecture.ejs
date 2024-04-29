@@ -151,7 +151,7 @@
 
         // 학습 시간 업데이트
         function updateLearningTime() {
-          if (currentTime >= lectureDuration) {
+          if (currentTime > lectureDuration) {
             stopUpdatingLearningTime();
             return;
           }
@@ -199,7 +199,7 @@
 
           eventSource.onmessage = function (event) {
             const data = JSON.parse(event.data);
-            updateLectureProgress(data.duration);
+            //updateLectureProgress(data.duration);
           };
 
           eventSource.onerror = function (error) {
