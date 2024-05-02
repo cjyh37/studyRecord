@@ -21,8 +21,8 @@
   <nav class="bg-white shadow">
     <div class="container mx-auto px-4 py-6">
       <div class="flex items-center justify-between flex-wrap">
-        <div class="flex items-center flex-shrink-0 text-xl font-bold text-gray-800 mr-6">
-          <a href="/" class="clock-font">
+        <div class="flex items-center flex-shrink-0 text-xl md:text-2xl tracking-tight font-bold text-gray-800 mr-6">
+          <a href="/">
             <%= setting.siteName %>
           </a>
         </div>
@@ -51,11 +51,11 @@
     </div>
   </nav>
 
-  <main class="container mx-auto px-4 py-8">
+  <main class="container mx-auto md:py-8 py-2">
     <%- body %>
   </main>
 
-  <footer class="bg-white mt-3">
+  <footer class="bg-white">
     <div class="container mx-auto px-4 py-4">
       <p class="text-center text-gray-600">&copy; 2024 <%= setting.siteName %>. All rights reserved.</p>
     </div>

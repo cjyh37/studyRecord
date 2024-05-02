@@ -1,11 +1,17 @@
 <div class="bg-white shadow rounded-lg p-6">
-  <h1 class="text-2xl font-bold mb-4">
-    <%= lecture.title %>
-      <span class="clock clock-font float-right bg-sky-500 px-2 py-1 text-2xl text-white rounded-lg">
+  <div class="md:flex">
+    <h1 class="grow font-bold mb-4 text-xl md:text-2xl">
+      <%= lecture.title %>
+    </h1>
+    <div class="mb-3 md:mb-0">
+      <div class="clock clock-font bg-sky-500 px-3 py-1 text-xl md:text-2xl text-white rounded-lg">
         <span id="duration" class="font-bold">
           0:00:00
-        </span></p>
-  </h1>
+        </span>
+      </div>
+    </div>
+  </div>
+
   <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
     <div class="md:col-span-2">
       <video id="lecture-video" class="rounded-lg video-js vjs-default-skin vjs-big-play-centered w-full"
@@ -48,9 +54,11 @@
           </li>
           <% }); %>
       </ul>
-      <div class="mt-4 flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4">
-        <button id="reset-button" class="bg-gray-500 text-white rounded-lg px-4 py-2">학습기록 초기화</button>
-        <button id="clear-cache-button" class="bg-gray-500 text-white rounded-lg px-4 py-2">캐시 초기화</button>
+      <div class="mt-4 flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
+        <button id="reset-button" class="bg-gray-500 hover:bg-gray-700 text-white rounded-lg  px-4 py-2">학습기록
+          초기화</button>
+        <button id="clear-cache-button" class="bg-gray-500 hover:bg-gray-700 text-white rounded-lg px-4 py-2">캐시
+          초기화</button>
       </div>
     </div>
   </div>
