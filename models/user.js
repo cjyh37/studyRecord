@@ -1,3 +1,4 @@
+const { name } = require('ejs');
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
@@ -7,6 +8,10 @@ const userSchema = new mongoose.Schema({
     unique: true,
   },
   password: {
+    type: String,
+    required: true,
+  },
+  name: {
     type: String,
     required: true,
   },
