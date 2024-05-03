@@ -78,26 +78,35 @@
         let learningId = '<%= learning._id %>';
         let lectureDuration = <%= lecture.duration %>;
         let learingDuration = <%= learning.duration %>;
-        let userId = '<%= String(currentUser) %>';
+        let userId = '<%= currentUser._id %>';
         let learningRecordMethod = '<%= setting.learningRecordMethod %>';
 
         let currentTime = learingDuration || 0;
         let intervalId;
+        let isFirstPlay = true;
         let resetButton = document.getElementById('reset-button');
         let cacheClearButton = document.getElementById('clear-cache-button');
 
         let player = videojs('lecture-video', {
-          autoplay: false,
+          autoplay: true,
           controls: true,
           preload: 'none',
         });
 
         // 비디오 플레이 버튼 클릭 시 학습 시간 업데이트 시작
         player.on('play', function () {
+          
           // 현재 학습 시간부터 비디오 시작
-          player.currentTime(currentTime);
+          if (isFirstPlay) {
+            player.currentTime(currentTime);
+            isFirstPlay = false;
+          }
 
           startUpdatingLearningTime();
+        });
+
+        player.on('canplay', function () {
+          
         });
 
         // 비디오 일시정지 시 학습 시간 업데이트 중지
@@ -206,7 +215,6 @@
 
           eventSource.onmessage = function (event) {
             const data = JSON.parse(event.data);
-            //updateLectureProgress(data.duration);
           };
 
           eventSource.onerror = function (error) {

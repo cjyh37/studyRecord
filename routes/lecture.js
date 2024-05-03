@@ -1,47 +1,17 @@
 const express = require("express");
 const router = express.Router();
-const socketIO = require("socket.io");
 const NodeCache = require('node-cache');
 const Lecture = require("../models/lecture");
 const Learning = require("../models/learning");
-const Setting = require('../models/setting');
 
 const cache = new NodeCache();
 
-router.io = function (server) {
-  io = socketIO(server);
 
-  io.on("connection", (socket) => {
-    console.log("socket connected");
-
-    socket.on("join", (learningId) => {
-      socket.join(learningId);
-    });
-
-
-    socket.on("learning", async (data) => {
-      const { learningId, userId, duration } = data;
-      try {
-        const learning = await Learning.findById(learningId, userId);
-        if (learning) {
-          learning.duration = duration;
-          await learning.save();
-          //io.to(learningId).emit("updateDuration", learning);
-        }
-      } catch (error) {
-        console.error("Error updating learning duration:", error);
-      }
-    });
-
-    socket.on("disconnect", () => {
-      console.log("socket disconnected");
-    });
-  });
-};
 
 // SSE 엔드포인트
 router.get('/sse/:learningId', async (req, res) => {
   const learningId = req.params.learningId;
+  let isFirst = true;
 
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
@@ -55,7 +25,14 @@ router.get('/sse/:learningId', async (req, res) => {
     try {
       const learning = await Learning.findById(learningId);
       if (learning) {
-        learning.duration++;
+
+        if (isFirst){
+          learning.duration+=2;
+          isFirst = false;
+        } else {
+          learning.duration++;
+        }
+
         await learning.save();
         res.write(`data: ${JSON.stringify(learning)}\n\n`);
       }
@@ -74,7 +51,7 @@ router.get('/sse/:learningId', async (req, res) => {
 // 강의 페이지 렌더링
 router.get('/:lectureId', async (req, res) => {
   const lectureId = req.params.lectureId;
-  const userId = req.session.userId;
+  const userId = req.session.user._id;
 
   try {
     // 강의 정보 캐싱
@@ -154,7 +131,7 @@ router.put("/api/learning/:id", async (req, res) => {
 // 학습 데이터 초기화 API
 router.delete('/api/learning/:id', async (req, res) => {
   const learningId = req.params.id;
-  const userId = req.session.userId;
+  const userId = req.session.user._id;
 
   try {
     const learning = await Learning.findOneAndDelete({ _id: learningId, userId });

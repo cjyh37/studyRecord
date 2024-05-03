@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
+const socketSession = require('express-socket.io-session');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const session = require('express-session');
@@ -21,16 +22,12 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 
-let currentUser = null;
 
 // MongoDB 연결
 connectToDatabase().catch(error => {
   console.error('Failed to connect to MongoDB:', error);
   process.exit(1);
 });
-
-// 소켓 연결 이벤트 처리
-io.on('connection', (socket) => { });
 
 const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET,
@@ -43,6 +40,45 @@ const sessionMiddleware = session({
 });
 
 app.use(sessionMiddleware);
+io.use(socketSession(sessionMiddleware));
+
+// 소켓 연결 이벤트 처리
+const Learning = require("./models/learning");
+io.on("connection", (socket) => {
+  console.log("socket connected");
+
+  socket.on("join", (learningId) => {
+    socket.join(learningId);
+  });
+
+  socket.on("learning", async (data) => {
+    const { learningId, duration } = data;
+    const userId = socket.handshake.session.user._id;
+
+    try {
+      const learning = await Learning.findOneAndUpdate(
+        { _id: learningId, userId },
+        { duration },
+        { new: true }
+      );
+
+      // if (learning) {
+      //   learning.duration = duration;
+      //   await learning.save();
+      // }
+
+      if (learning) {
+        io.to(learning.lectureId.toString()).emit('updateDuration', learning);
+      }
+    } catch (error) {
+      console.error("Error updating learning duration:", error);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("socket disconnected");
+  });
+});
 
 const basicMiddleware = async (req, res, next) => {
   try {
@@ -80,18 +116,18 @@ const authMiddleware = (req, res, next) => {
   if (!req.session.user) {
     return res.redirect("/auth/login");
   }
-  currentUser = req.session.user;
 
   next();
 };
 
-lectureRouter.io(server); // server 객체를 lecture 라우터에 전달
+//lectureRouter.io(server); // server 객체를 lecture 라우터에 전달
 
 // 라우터 설정
 app.use("/", indexRouter);
 app.use("/auth", authRouter);
 app.use("/lecture", authMiddleware, lectureRouter);
 app.use('/setting', authMiddleware, settingRouter);
+
 
 // 서버 시작
 const port = process.env.PORT || 3000;
