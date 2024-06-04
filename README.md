@@ -3,7 +3,9 @@
 
 # 설치
 npm i
+
 npm run init // database init
+
 npm start // keep service by nodemon
 
 # test 계정 login
