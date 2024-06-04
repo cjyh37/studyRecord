@@ -1,5 +1,12 @@
-### 웹서비스특론 과제
-# 2024년 1학기
+# LMS by Nodejs
+
+2024년 1학기 웹서비스특론 과제
+
+## Stack
+
+- Node.js, Express.js
+- MongoDB
+
 
 # 설치
 ``npm i``
